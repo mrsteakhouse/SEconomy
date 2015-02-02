@@ -1,0 +1,115 @@
+name: SEconomy
+description: Economy Plugin
+main: com.mrsteakhouse.SEconomy
+database: true
+depend: [Vault]
+version: 1.5
+commands:
+  seconomy:
+    description: base command
+    usage: /<command>
+    aliases: [sconomy, se, seco]
+  money:
+    description: displays the money in coinpurse
+    usage: /<command>
+permissions:
+  seconomy.*:
+    description: all persmissions in one
+    default: false
+    children:
+      seconomy.reload: true
+      seconomy.account.show: true
+      seconomy.account.deposit: true
+      seconomy.account.withdraw: true
+      seconomy.account.add: true
+      seconomy.account.remove: true
+      seconomy.account.set: true
+      seconomy.coinpurse.show: true
+      seconomy.coinpurse.send: true
+      seconomy.coinpurse.add: true
+      seconomy.coinpurse.remove: true
+      seconomy.coinpurse.set: true
+      seconomy.bank.add: true
+      seconomy.bank.del: true
+      seconomy.bank.showbanklist: true
+      seconomy.reset: true
+      seconomy.settax: true
+      seconomy.show: true
+      
+  seconomy.all:
+    description: all persmissions in one
+    default: op
+    children:
+      seconomy.reload: true
+      seconomy.account.show: true
+      seconomy.account.deposit: true
+      seconomy.account.withdraw: true
+      seconomy.account.add: true
+      seconomy.account.remove: true
+      seconomy.account.set: true
+      seconomy.coinpurse.show: true
+      seconomy.coinpurse.send: true
+      seconomy.coinpurse.add: true
+      seconomy.coinpurse.remove: true
+      seconomy.coinpurse.set: true
+      seconomy.bank.add: true
+      seconomy.bank.del: true
+      seconomy.bank.showbanklist: true
+      seconomy.reset: true
+      seconomy.settax: true
+      seconomy.show: true
+    
+  seconomy.reload:
+    description: reloads settings and data.
+    default: false
+  seconomy.account.show:
+    description: to show the account value.
+    default: false
+  seconomy.account.deposit:
+    description: to deposit money to account.
+    default: false
+  seconomy.account.withdraw:
+    description: to withdraw money from account.
+    default: false
+  seconomy.account.add:
+    description: allows to add the amount to a players account.
+    default: false
+  seconomy.account.remove:
+    description: allows to remove the amount to a players account.
+    default: false
+  seconomy.account.set:
+    description: allows to set the amount to a players account.
+    default: false
+  seconomy.coinpurse.show:
+    description: to show the value of the coinpurse.
+    default: false
+  seconomy.coinpurse.send:
+    description: to transfer money to another account.
+    default: false
+  seconomy.coinpurse.add:
+    description: allows to add the amount to a players coinpurse.
+    default: false
+  seconomy.coinpurse.remove:
+    description: allows to remove the amount to a players coinpurse.
+    default: false
+  seconomy.coinpurse.set:
+    description: allows to set the amount to a players coinpurse.
+    default: false
+  seconomy.bank.add:
+    description: to add a new bank block.
+    default: false
+  seconomy.bank.del:
+    description: to delete a bank block.
+    default: false
+  seconomy.bank.showbanklist:
+    description: to show a list of all bank blocks.
+    default: false
+  seconomy.reset:
+    description: to reset a users account and coinpurse.
+    default: false
+  seconomy.settax:
+    description: to set the tax rate in percentage.
+    default: false
+  seconomy.show:
+    description: to see an users account status.
+    default: false

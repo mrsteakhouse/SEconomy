@@ -1,0 +1,11 @@
+seconomy:
+  root: ./plugins/SEconomy
+  language: german
+  startvalue: 100
+  limit: -50
+  dbadress: localhost
+  dbuser: default
+  dbpass: default
+  tax: 10
+  nextClean: 0
+  usesql: true
