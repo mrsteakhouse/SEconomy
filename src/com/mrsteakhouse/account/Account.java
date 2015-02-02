@@ -150,4 +150,22 @@ public class Account
 	{
 		return getCoinpurseValue() >= amount;
 	}
+	
+	public boolean withdrawFromCoinpurse(double amount)
+	{
+		if (getCoinpurseValue() > 0.0d)
+		{
+			removeCoinpurseValue(amount);
+			return true;
+		} else
+		{
+			return false;
+		}
+	}
+	
+	public boolean depositIntoCoinpurse(double amount)
+	{
+		addCoinpurseValue(amount);
+		return true;
+	}
 }

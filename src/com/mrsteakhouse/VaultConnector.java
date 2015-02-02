@@ -183,7 +183,7 @@ public class VaultConnector implements Economy
 
 	private EconomyResponse depositPlayer(Account account, double amount)
 	{
-		if (account.deopsit(amount, plugin.getTax()))
+		if (account.depositIntoCoinpurse(amount))
 		{
 			return new EconomyResponse(amount, account.getCoinpurseValue(),
 					ResponseType.SUCCESS, null);
@@ -358,7 +358,7 @@ public class VaultConnector implements Economy
 
 	private EconomyResponse withdrawPlayer(Account account, double amount)
 	{
-		if (account.withdraw(amount))
+		if (account.withdrawFromCoinpurse(amount))
 		{
 			return new EconomyResponse(amount, account.getCoinpurseValue(),
 					ResponseType.SUCCESS, null);
