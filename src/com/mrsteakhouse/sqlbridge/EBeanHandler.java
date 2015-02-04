@@ -13,12 +13,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.Update;
 import com.mrsteakhouse.SEconomy;
 import com.mrsteakhouse.account.Account;
 
@@ -148,28 +146,14 @@ public class EBeanHandler
 
 	public boolean updateAccount(Account account)
 	{
-//		String sqlquery = new String(
-//				"UPDATE seconomy_accounts SET account_value = "
-//						+ account.getAccountValue() + " and coinpurse_value = "
-//						+ account.getCoinpurseValue() + " WHERE user = '"
-//						+ account.getPlayer().toString() + "'");
-//		SqlUpdate up = db
-//				.createSqlUpdate("UPDATE seconomy_accounts SET account_value = :account_value, coinpurse_value = :coinpurse_value WHERE user = :user");
-//		up.setParameter("account_value",
-//				new BigDecimal(account.getAccountValue()));
-//		up.setParameter("coinpurse_value",
-//				new BigDecimal(account.getCoinpurseValue()));
-//		up.setParameter("user", account.getPlayer().toString());
-//		<
-//		return up.execute() == 1;
-		
-		Set<EBeanAccount> accs = db.find(EBeanAccount.class).where().eq("user", account.getPlayer().toString()).findSet();
-		
-		if(accs.isEmpty())
+		Set<EBeanAccount> accs = db.find(EBeanAccount.class).where()
+				.eq("user", account.getPlayer().toString()).findSet();
+
+		if (accs.isEmpty())
 		{
 			return false;
 		}
-		
+
 		EBeanAccount acc = (EBeanAccount) accs.toArray()[0];
 		acc.setAccountValue(new BigDecimal(account.getAccountValue()));
 		acc.setCoinpurseValue(new BigDecimal(account.getCoinpurseValue()));

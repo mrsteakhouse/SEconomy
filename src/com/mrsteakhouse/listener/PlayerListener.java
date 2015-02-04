@@ -32,7 +32,7 @@ public class PlayerListener implements Listener
 			Player player = event.getEntity();
 			player.sendMessage(MessageFormat.format(
 					String.valueOf(plugin.getLangData().get("41")), plugin
-							.getAccountList().get(player.getName())
+							.getAccountList().get(player.getUniqueId())
 							.getCoinpurseValue(),
 					String.valueOf(plugin.getLangData().get("currSymbol"))));
 			plugin.resetCoinpurse(player);

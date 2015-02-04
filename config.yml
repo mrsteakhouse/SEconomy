@@ -1,11 +1,20 @@
 seconomy:
+  #Gibt an wo das root-Verzeichnis vom Plugin ist. Ist ueberholt und wird in neueren Versionen entfernt.
   root: ./plugins/SEconomy
+  
+  #Verwendete Sprache
   language: german
+  
+  #Startwert beim erstellen eines Accounts
   startvalue: 100
+  #Standard limit.
   limit: -50
-  dbadress: localhost
-  dbuser: default
-  dbpass: default
+  
+  #Steuern die beim einzahlen an das adminkonto gesendet werden.
   tax: 10
+  
+  #ingorieren.
   nextClean: 0
+  
+  #ignorieren.
   usesql: true

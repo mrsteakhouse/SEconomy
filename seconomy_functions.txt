@@ -1,0 +1,46 @@
+SEconomy Funktionalität
+
+Bei den Befehlen beziehe ich mich auf folgende Syntax:
+[]: Zusatz wahlweise verwenden
+(|): Entweder das eine oder das andere.
+<>: Ein Wert. Der Bezeichner soll nur deutlich machen, wofür dieser verwendet wird.
+
+Befehle:
+	/money [(withdraw | deposit) <amount>]: Zeigt das Geld in der Tasche an. Zahlt Geld ein oder hebt Geld vom Konto ab.
+	/se acc: Zeigt das Geld im Konto an, sofern ein Bankblock angeschaut wird.
+	/se accadd <name> <amount>: Adminbefehl, fügt einem Spieler-Konto den Betrag hinzu. Die Namen sind case-sensitiv. Man muss den exakten Namen eingeben. Darum werde ich mich in späteren Versionen kümmern. (Vielleich klaue ich das von Essentials)
+	/se accremove <name <amount>: Adminbefehl: zieht dem Spieler-Konto den Betrag wieder ab.
+	/se accset <name> <amount>: Adminbefehl: Setzt das Spieler-Konto auf den Betrag.
+	/se addbank [<world> <x> <y> <z>]: Spezifiziert einen Bankblock. Wenn kein Weltname und Koordinaten angegeben, dann wird der angeschaute Block verwendet.
+	/se delbank [<world> <x> <y> <z>]: Löscht einen Bankblock wieder. Selbiges wie /se addbank.
+	/se listbankblocks: Listet alle Bankblöcke mit Koordinaten und Weltname auf.
+	/se reload: Lädt die Plugin Einstellungen und die Daten neu.
+	/se reset <name>: Adminbefehl: Setzt einen Gesamten Account null. Geldbeutel und Konto!
+	/se send <name> <amount>: Sendet einem Spieler Geld an den Geldbeutel.
+	/se settax <amount>: Legt die Steuern beim Einzahlen prozentual fest.
+	/se showacc <name>: Zeigt das Vermögen eines bestimmten Accounts an. Geldbeutel und Konto.
+	/se walletadd <name> <amount>: Adminbefehl: Äquivalent zu /se accadd. Bezieht sich allerdings auf den Geldbeutel.
+	/se walletremove <name> <amount>: Adminbefehl: Äquivalent zu /se accremove. Bezieht sich allerdings auf den Geldbeutel.
+	/se walletset <name> <amount>: Adminbefehl: Äquivalent zu /se accset. Bezieht sich allerdings auf den Geldbeutel.
+	
+Ich schreibe nur dahinter zu welchem Befehl die Rechte gehören. Sinn dahinter habe ich ja bereits oben erläutert.
+	
+Permissions:
+	seconomy.reload: /se reload
+	seconomy.account.show: /se acc
+	seconomy.account.deposit: /money deposit
+	seconomy.account.withdraw: /money withdraw
+	seconomy.account.add: /se accadd
+	seconomy.account.remove: /se accremove
+	seconomy.account.set: /se accset
+	seconomy.coinpurse.show: /money
+	seconomy.coinpurse.send: /se send
+	seconomy.coinpurse.add: /se walletadd
+	seconomy.coinpurse.remove: /se walletremove
+	seconomy.coinpurse.set: /se walletset
+	seconomy.bank.add: /se addbank
+	seconomy.bank.del: /se delbank
+	seconomy.bank.showbanklist: /se listbankblocks
+	seconomy.reset: /se reset
+	seconomy.settax: /se settax
+	seconomy.show: /se show

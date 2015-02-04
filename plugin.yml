@@ -3,7 +3,7 @@ description: Economy Plugin
 main: com.mrsteakhouse.SEconomy
 database: true
 depend: [Vault]
-version: 1.5
+version: 1.6
 commands:
   seconomy:
     description: base command
