@@ -1,7 +1,12 @@
 package com.mrsteakhouse.commands;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -14,11 +19,9 @@ import com.mrsteakhouse.util.Util;
 
 public class Money implements CommandExecutor
 {
-	// TODO: eigene subcommands mit withdraw und deposit schreiben. am besten
-	// kein eigenes paket
-	private final String perm[] =
+	private final static String perm[] =
 	{ "seconomy.coinpurse.show", "seconomy.account.deposit",
-			"seconomy.account.withdraw" };
+			"seconomy.account.withdraw", "seconomy.money.top" };
 	private static SEconomy plugin = null;
 
 	public Money(SEconomy plugin)
@@ -50,7 +53,7 @@ public class Money implements CommandExecutor
 				return false;
 			}
 
-			if (args.length > 0)
+			if (args.length == 2)
 			{
 				if (!Util.isDouble(args[1]))
 				{
@@ -76,9 +79,25 @@ public class Money implements CommandExecutor
 										.getLangData().get("7")), perm[2]));
 					}
 
+					boolean bankBlockFound = false;
 					Location target = player.getTargetBlock(null, 10)
 							.getLocation();
 					if (plugin.getBankBlocks().contains(target))
+					{
+						bankBlockFound = true;
+					}
+
+					for (Location loc : Util.circle(player,
+							player.getLocation(), 5, 5, false, true, 0))
+					{
+						if (plugin.getBankBlocks().contains(loc))
+						{
+							bankBlockFound = true;
+							break;
+						}
+					}
+
+					if (bankBlockFound)
 					{
 						com.mrsteakhouse.account.Account acc = plugin
 								.getAccountList().get(player.getUniqueId());
@@ -98,6 +117,7 @@ public class Money implements CommandExecutor
 						}
 						return true;
 					}
+
 					player.sendMessage(ChatColor.DARK_RED
 							+ String.valueOf(plugin.getLangData().get("17")));
 					return true;
@@ -110,9 +130,26 @@ public class Money implements CommandExecutor
 								+ MessageFormat.format(String.valueOf(plugin
 										.getLangData().get("7")), perm[1]));
 					}
+
+					boolean bankBlockFound = false;
 					Location target = player.getTargetBlock(null, 10)
 							.getLocation();
 					if (plugin.getBankBlocks().contains(target))
+					{
+						bankBlockFound = true;
+					}
+
+					for (Location loc : Util.circle(player,
+							player.getLocation(), 5, 5, false, true, 0))
+					{
+						if (plugin.getBankBlocks().contains(loc))
+						{
+							bankBlockFound = true;
+							break;
+						}
+					}
+
+					if (bankBlockFound)
 					{
 						com.mrsteakhouse.account.Account acc = plugin
 								.getAccountList().get(player.getUniqueId());
@@ -131,8 +168,81 @@ public class Money implements CommandExecutor
 						}
 						return true;
 					}
+
 					player.sendMessage(ChatColor.DARK_RED
 							+ String.valueOf(plugin.getLangData().get("13")));
+					return true;
+				}
+			}
+
+			if (args.length > 1)
+			{
+				if (args[0].equalsIgnoreCase("top"))
+				{
+					int page = 0;
+					int linesPerPage = 10;
+
+					if (!player.hasPermission(perm[3]))
+					{
+						player.sendMessage(ChatColor.RED
+								+ MessageFormat.format(String.valueOf(plugin
+										.getLangData().get("7")), perm[3]));
+						return false;
+					}
+
+					if (args.length == 2)
+					{
+						if (!Util.isInteger(args[1]))
+						{
+							player.sendMessage(ChatColor.DARK_RED
+									+ String.valueOf(plugin.getLangData().get(
+											"9")));
+							return false;
+						}
+						page = Integer.valueOf(args[1]);
+					}
+
+					List<com.mrsteakhouse.account.Account> sortedAccounts = new ArrayList<com.mrsteakhouse.account.Account>();
+					sortedAccounts.addAll(plugin.getAccountList().values());
+					Collections.sort(sortedAccounts);
+
+					if (page > 0)
+					{
+						page--;
+					}
+					sender.sendMessage(MessageFormat.format(
+							"{0}-------- Top Player Page {1}"
+									+ (page + 1)
+									+ "{0}/{1}"
+									+ ((int) linesPerPage / sortedAccounts
+											.toArray().length) + "{0} --------",
+							ChatColor.DARK_GREEN, ChatColor.GOLD));
+
+					com.mrsteakhouse.account.Account tempAcc;
+					double value;
+					String playerName;
+					for (int i = (page * linesPerPage); i < (page
+							* linesPerPage + linesPerPage)
+							&& i < sortedAccounts.size(); i++)
+					{
+						tempAcc = sortedAccounts.get(i);
+						value = tempAcc.getAccountValue()
+								+ tempAcc.getCoinpurseValue();
+						if (tempAcc.getPlayer().equals(new UUID(0, 0)))
+						{
+							playerName = "Adminaccount";
+						} else
+						{
+							playerName = Bukkit.getPlayer(tempAcc.getPlayer())
+									.getName();
+						}
+						sender.sendMessage(MessageFormat.format(
+								"{0}{1}. {2}: {3}{4}{0}{5}", ChatColor.GREEN,
+								playerName, i + 1, ChatColor.GOLD, value,
+								plugin.getLangData().get("currSymbol")));
+					}
+					sender.sendMessage(ChatColor.DARK_GREEN
+							+ "-----------------------------------");
 					return true;
 				}
 			}
@@ -142,7 +252,8 @@ public class Money implements CommandExecutor
 			player.sendMessage(MessageFormat.format(String.valueOf(plugin
 					.getLangData().get("24")),
 					(money >= 0 ? ChatColor.DARK_GREEN : ChatColor.DARK_RED),
-					money, plugin.getLangData().get("currSymbol")));
+					money, ChatColor.RESET,
+					plugin.getLangData().get("currSymbol")));
 			return true;
 		}
 		return false;
@@ -157,8 +268,19 @@ public class Money implements CommandExecutor
 
 	public static void help(CommandSender sender)
 	{
+		if (sender instanceof Player)
+		{
+			if ((!sender.hasPermission(perm[0]))
+					|| (!sender.hasPermission(perm[1]))
+					|| (!sender.hasPermission(perm[2]))
+					|| (!sender.hasPermission(perm[3])))
+			{
+				return;
+			}
+		}
 		sender.sendMessage(ChatColor.YELLOW
-				+ "/money [(withdraw | deposit) <amount>]: " + ChatColor.AQUA
+				+ "/money [(withdraw | deposit) <amount>] | [top <page>]: "
+				+ ChatColor.AQUA
 				+ String.valueOf(plugin.getLangData().get("25")));
 	}
 

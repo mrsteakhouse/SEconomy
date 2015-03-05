@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import com.mrsteakhouse.SEconomy;
 
-public class Account
+public class Account implements Comparable<Account>
 {
 	private SEconomy plugin;
 	private double accountValue;
@@ -153,7 +153,7 @@ public class Account
 	
 	public boolean withdrawFromCoinpurse(double amount)
 	{
-		if (getCoinpurseValue() > 0.0d)
+		if (getCoinpurseValue() >= 0.0d)
 		{
 			removeCoinpurseValue(amount);
 			return true;
@@ -167,5 +167,11 @@ public class Account
 	{
 		addCoinpurseValue(amount);
 		return true;
+	}
+
+	@Override
+	public int compareTo(Account acc)
+	{
+		return (int) ((acc.getAccountValue() + acc.getCoinpurseValue()) - (this.getAccountValue() + this.getCoinpurseValue()));
 	}
 }

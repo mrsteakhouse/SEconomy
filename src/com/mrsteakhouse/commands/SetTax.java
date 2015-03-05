@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import com.mrsteakhouse.SEconomy;
 import com.mrsteakhouse.util.Util;
@@ -66,6 +67,13 @@ public class SetTax implements SubCommand
 	@Override
 	public void help(CommandSender sender)
 	{
+		if (sender instanceof Player)
+		{
+			if (!sender.hasPermission(perm))
+			{
+				return;
+			}
+		}
 		sender.sendMessage(ChatColor.YELLOW + "/se settax <amount>: "
 				+ ChatColor.AQUA + plugin.getLangData().get("60"));
 	}

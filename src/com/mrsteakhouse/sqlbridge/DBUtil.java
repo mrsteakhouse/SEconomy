@@ -250,7 +250,7 @@ public abstract class DBUtil
 		// Fire "before drop" event
 		try
 		{
-			// beforeDropDatabase();
+			beforeDropDatabase();
 		} catch (Exception ex)
 		{
 			// If the database exists, dropping has to be canceled to prevent

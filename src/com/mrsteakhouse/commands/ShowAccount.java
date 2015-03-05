@@ -1,13 +1,16 @@
 package com.mrsteakhouse.commands;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import com.mrsteakhouse.SEconomy;
 import com.mrsteakhouse.util.UUIDFetcher;
+import com.mrsteakhouse.util.Util;
 
 public class ShowAccount implements SubCommand
 {
@@ -25,6 +28,7 @@ public class ShowAccount implements SubCommand
 		if (!sender.hasPermission(perm))
 		{
 			sender.sendMessage(noPerm());
+			return false;
 		}
 
 		if (args.length != 1)
@@ -36,12 +40,30 @@ public class ShowAccount implements SubCommand
 
 		com.mrsteakhouse.account.Account account = null;
 		UUID uuid = null;
+		String playername = "admin";
+		List<String> playernames;
 
 		if (!args[0].equalsIgnoreCase("admin"))
 		{
+
 			try
 			{
-				uuid = UUIDFetcher.getUUIDOf(args[0]);
+				playernames = Util.fetchPlayerName(args[0]);
+				if (playernames.size() > 1)
+				{
+					sender.sendMessage(MessageFormat.format(
+							String.valueOf(plugin.getLangData().get("66")),
+							ChatColor.RED));
+					return false;
+				} else if (playernames.isEmpty())
+				{
+					sender.sendMessage(MessageFormat.format(
+							String.valueOf(plugin.getLangData().get("65")),
+							ChatColor.RED));
+					return false;
+				}
+				playername = playernames.get(0);
+				uuid = UUIDFetcher.getUUIDOf(playername);
 			} catch (Exception e)
 			{
 			}
@@ -65,12 +87,12 @@ public class ShowAccount implements SubCommand
 
 		}
 
-		sender.sendMessage(MessageFormat.format(
-				String.valueOf(plugin.getLangData().get("61")),
-				ChatColor.DARK_GREEN, ChatColor.AQUA, args[0], ChatColor.GOLD,
-				account.getAccountValue(),
-				plugin.getLangData().get("currSymbol"),
-				account.getCoinpurseValue()));
+		sender.sendMessage(MessageFormat.format(String.valueOf(plugin
+				.getLangData().get("61")), ChatColor.DARK_GREEN,
+				ChatColor.AQUA, playername, ChatColor.GOLD, account
+						.getAccountValue(),
+				plugin.getLangData().get("currSymbol"), account
+						.getCoinpurseValue()));
 		return true;
 	}
 
@@ -85,6 +107,13 @@ public class ShowAccount implements SubCommand
 	@Override
 	public void help(CommandSender sender)
 	{
+		if (sender instanceof Player)
+		{
+			if (!sender.hasPermission(perm))
+			{
+				return;
+			}
+		}
 		sender.sendMessage(ChatColor.YELLOW + "/se showacc <name>: "
 				+ ChatColor.AQUA + plugin.getLangData().get("62"));
 	}

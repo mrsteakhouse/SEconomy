@@ -16,5 +16,8 @@ seconomy:
   #ingorieren.
   nextClean: 0
   
-  #ignorieren.
-  usesql: true
+  username: root
+  password: admin
+  hostname: localhost
+  port: 3306
+  database: default

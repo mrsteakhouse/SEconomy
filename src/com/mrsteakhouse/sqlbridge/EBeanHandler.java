@@ -28,6 +28,9 @@ public class EBeanHandler
 
 	public boolean storeBankBlock(Location location)
 	{
+		if(hasBankBlock(location))
+			return false;
+		
 		EBeanBankBlock bankblock = new EBeanBankBlock();
 		bankblock.setWorld(location.getWorld().getName());
 		bankblock.setX((int) location.getX());
@@ -74,7 +77,7 @@ public class EBeanHandler
 				.eq("z", (int) location.getZ()).findRowCount();
 		int worldCount = db.find(EBeanBankBlock.class).where()
 				.ieq("world", location.getWorld().getName()).findRowCount();
-		return (xCount == 1 && yCount == 1 && zCount == 1 && worldCount == 1);
+		return (xCount > 0 && yCount > 0 && zCount > 0 && worldCount > 0);
 	}
 
 	public Set<Location> getBankBlocks()

@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.mrsteakhouse.SEconomy;
+import com.mrsteakhouse.util.Util;
 
 public class Account implements SubCommand
 {
@@ -35,20 +36,35 @@ public class Account implements SubCommand
 			player.sendMessage(noPerm());
 			return false;
 		}
+
+		boolean bankBlockFound = false;
 		Location target = player.getTargetBlock(null, 10).getLocation();
-		for (Location loc : plugin.getBankBlocks())
+		if (plugin.getBankBlocks().contains(target))
 		{
-			if (loc.equals(target))
+			bankBlockFound = true;
+		}
+
+		for (Location loc : Util.circle(player, player.getLocation(), 5, 5,
+				false, true, 0))
+		{
+			if (plugin.getBankBlocks().contains(loc))
 			{
-				double money = plugin.getAccountList()
-						.get(player.getUniqueId()).getAccountValue();
-				player.sendMessage(MessageFormat.format(
-						String.valueOf(plugin.getLangData().get("5")),
-						(money >= 0 ? ChatColor.DARK_GREEN : ChatColor.DARK_RED),
-						money, plugin.getLangData().get("currSymbol")));
-				return true;
+				bankBlockFound = true;
+				break;
 			}
 		}
+
+		if (bankBlockFound)
+		{
+			double money = plugin.getAccountList().get(player.getUniqueId())
+					.getAccountValue();
+			player.sendMessage(MessageFormat.format(String.valueOf(plugin
+					.getLangData().get("5")),
+					(money >= 0 ? ChatColor.DARK_GREEN : ChatColor.DARK_RED),
+					money, plugin.getLangData().get("currSymbol")));
+			return true;
+		}
+
 		player.sendMessage(ChatColor.DARK_RED
 				+ String.valueOf(plugin.getLangData().get("6")));
 		return true;
@@ -65,6 +81,13 @@ public class Account implements SubCommand
 	@Override
 	public void help(CommandSender sender)
 	{
+		if (sender instanceof Player)
+		{
+			if (!sender.hasPermission(perm))
+			{
+				return;
+			}
+		}
 		sender.sendMessage(ChatColor.YELLOW + "/se acc: " + ChatColor.AQUA
 				+ plugin.getLangData().get("8"));
 	}

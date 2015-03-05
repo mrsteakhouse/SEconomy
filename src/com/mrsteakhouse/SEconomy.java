@@ -14,21 +14,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import javax.persistence.PersistenceException;
 
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.ServicePriority;
-import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.avaje.ebean.EbeanServer;
@@ -52,12 +50,13 @@ public class SEconomy extends JavaPlugin
 	private int startvalue = 0;
 	private double defaultLimit = 0;
 	private static Economy economy = null;
-	private static final Logger logger = Logger.getLogger("Minecraft");
 	private Map<UUID, Account> accountList = new HashMap<UUID, Account>();
 	private Set<Location> bankBlocks = new HashSet<Location>();
 	private Account adminAccount;
 	private double tax;
-	private boolean useSQL = true;
+	private String DBUser = "";
+	private String DBPass = "";
+	private String DBUrl = "";
 	private Calendar nextClean = new GregorianCalendar();
 	private static EbeanServer database;
 
@@ -85,23 +84,15 @@ public class SEconomy extends JavaPlugin
 		pm.registerEvents(new BlockListener(this), this);
 		pm.registerEvents(new PlayerListener(this), this);
 
-		if (!setupEconomy())
-		{
-			logger.severe(String.format(
-					"[%s] - Disabled due to no Vault dependency found!",
-					getDescription().getName()));
-			getServer().getPluginManager().disablePlugin(this);
-			return;
-		}
-
 		setupAdminAccount();
 	}
 
 	@Override
 	public void onDisable()
 	{
-		logger.info(String.format("[%s] %s %s", getDescription().getName(),
-				this.langData.get("1"), getDescription().getVersion()));
+		Bukkit.getLogger().info(
+				String.format("[%s] %s %s", getDescription().getName(),
+						this.langData.get("1"), getDescription().getVersion()));
 		saveConfig();
 		saveConfiguration();
 		saveAccounts();
@@ -124,52 +115,51 @@ public class SEconomy extends JavaPlugin
 		startvalue = cs.getInt("startvalue");
 		defaultLimit = cs.getDouble("limit");
 		tax = cs.getDouble("tax") / 100;
-		useSQL = cs.getBoolean("usesql");
 		nextClean.setTimeInMillis(cs.getLong("nextClean"));
+		DBUser = cs.getString("username");
+		DBPass = cs.getString("password");
+		DBUrl = "jdbc:mysql://" + cs.getString("hostname") + ":"
+				+ cs.getInt("port") + "/" + cs.getString("database");
 	}
 
 	@SuppressWarnings("deprecation")
 	private void saveConfiguration()
 	{
-		if (useSQL)
+		File file = new File(root, "config" + ".yml");
+		InputStream is;
+		FileConfiguration config;
+
+		if (!file.exists())
 		{
+			is = getResource("config" + ".yml");
+			config = YamlConfiguration.loadConfiguration(is);
 		} else
 		{
-			File file = new File(root, "config" + ".yml");
-			InputStream is;
-			FileConfiguration config;
+			config = YamlConfiguration.loadConfiguration(file);
+		}
+		ConfigurationSection cs = null;
+		if ((cs = config.getConfigurationSection("seconomy")) == null)
+		{
+			config.createSection("seconomy");
+			cs = config.getConfigurationSection("seconomy");
+		}
 
-			if (!file.exists())
-			{
-				is = getResource("config" + ".yml");
-				config = YamlConfiguration.loadConfiguration(is);
-			} else
-			{
-				config = YamlConfiguration.loadConfiguration(file);
-			}
-			ConfigurationSection cs = null;
-			if ((cs = config.getConfigurationSection("seconomy")) == null)
-			{
-				config.createSection("seconomy");
-				cs = config.getConfigurationSection("seconomy");
-			}
+		cs.set("root", root);
+		cs.set("language", language);
+		cs.set("startvalue", startvalue);
+		cs.set("limit", defaultLimit);
+		cs.set("tax", tax * 100);
+		cs.set("nextClean", nextClean.getTimeInMillis());
+		cs.set("username", DBUser);
+		cs.set("password", DBPass);
 
-			cs.set("root", root);
-			cs.set("language", language);
-			cs.set("startvalue", startvalue);
-			cs.set("limit", defaultLimit);
-			cs.set("tax", tax * 100);
-			cs.set("usesql", useSQL);
-			cs.set("nextClean", nextClean.getTimeInMillis());
-
-			try
-			{
-				config.save(file);
-			} catch (IOException e)
-			{
-				logger.severe(String.valueOf(this.langData.get("2")));
-				e.printStackTrace();
-			}
+		try
+		{
+			config.save(file);
+		} catch (IOException e)
+		{
+			Bukkit.getLogger().severe(String.valueOf(this.langData.get("2")));
+			e.printStackTrace();
 		}
 	}
 
@@ -185,35 +175,27 @@ public class SEconomy extends JavaPlugin
 				return list;
 			}
 		};
-		FileConfiguration config = YamlConfiguration
-				.loadConfiguration(new File("bukkit.yml"));
 
 		try
 		{
-			DB.initializeDatabase(config.getString("database.driver"),
-					config.getString("database.url"),
-					config.getString("database.username"),
-					config.getString("database.password"),
-					config.getString("database.isolation"));
+			DB.initializeDatabase("com.mysql.jdbc.Driver", DBUrl, DBUser,
+					DBPass, "SERIALIZABLE");
 		} catch (Exception e)
 		{
+			List<Class<?>> tableClasses = new LinkedList<Class<?>>();
+			tableClasses.add(EBeanAccount.class);
+			tableClasses.add(EBeanBankBlock.class);
+
+			try
+			{
+				for (Class<?> tableClass : tableClasses)
+					getDatabase().find(tableClass).findRowCount();
+			} catch (PersistenceException ex)
+			{
+				installDDL();
+			}
 		}
 		database = DB.getDatabase();
-	}
-
-	private boolean setupEconomy()
-	{
-		if (getServer().getPluginManager().getPlugin("Vault") == null)
-		{
-			return false;
-		}
-		final ServicesManager sm = getServer().getServicesManager();
-		sm.register(Economy.class, new VaultConnector(this), this,
-				ServicePriority.Highest);
-
-		economy = getServer().getServicesManager()
-				.getRegistration(Economy.class).getProvider();
-		return economy != null;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -239,7 +221,7 @@ public class SEconomy extends JavaPlugin
 			datei.save(file);
 		} catch (IOException e)
 		{
-			logger.severe("Error loading language file");
+			Bukkit.getLogger().severe("Error loading language file");
 			e.printStackTrace();
 		}
 	}
@@ -247,164 +229,44 @@ public class SEconomy extends JavaPlugin
 	private void loadBankBlocks()
 	{
 		EBeanHandler handler = EBeanHandler.getEBH();
-		if (!useSQL)
-		{
-			logger.log(Level.INFO,
-					"Failed to initialize database or disabled. Switching to file storage");
-			File file = new File(root, "banks.yml");
-			FileConfiguration datei = YamlConfiguration.loadConfiguration(file);
-
-			if (!file.exists())
-			{
-				return;
-			}
-
-			ConfigurationSection cs = datei.getConfigurationSection("banks");
-			List<String> sList = cs.getStringList("values");
-
-			for (String s : sList)
-			{
-				String[] splits = s.split(",");
-				World w = Bukkit.getWorld(splits[0]);
-				Location loc = new Location(w, Double.valueOf(splits[1]),
-						Double.valueOf(splits[2]), Double.valueOf(splits[3]));
-				bankBlocks.add(loc);
-			}
-		} else
-		{
-			bankBlocks = handler.getBankBlocks();
-		}
+		bankBlocks = handler.getBankBlocks();
 	}
 
 	private void saveBankBlocks()
 	{
-		if (!useSQL)
+		for (Location loc : bankBlocks)
 		{
-			File file = new File(root, "banks.yml");
-			FileConfiguration config = YamlConfiguration
-					.loadConfiguration(file);
-			ConfigurationSection cs;
-
-			if (!file.exists())
+			if (!EBeanHandler.getEBH().hasBankBlock(loc))
 			{
-				config.createSection("banks");
-			}
-
-			List<String> sList = new LinkedList<String>();
-			String s;
-			for (Location loc : bankBlocks)
-			{
-				s = loc.getWorld().getName() + "," + loc.getX() + ","
-						+ loc.getY() + "," + loc.getZ();
-				sList.add(s);
-			}
-
-			cs = config.getConfigurationSection("banks");
-
-			cs.set("values", sList);
-			try
-			{
-				config.save(file);
-			} catch (IOException e)
-			{
-				logger.severe(String.valueOf(this.langData.get("2")));
-				e.printStackTrace();
-			}
-		} else
-		{
-			for (Location loc : bankBlocks)
-			{
-				if (!EBeanHandler.getEBH().hasBankBlock(loc))
-				{
-					EBeanHandler.getEBH().storeBankBlock(loc);
-				}
+				EBeanHandler.getEBH().storeBankBlock(loc);
 			}
 		}
 	}
 
 	private void saveAccounts()
 	{
-		if (!useSQL)
+		EBeanHandler handler = EBeanHandler.getEBH();
+		for (Account acc : accountList.values())
 		{
-			File file = new File(root, "accounts.yml");
-			FileConfiguration datei;
-			ConfigurationSection cs;
-
-			datei = YamlConfiguration.loadConfiguration(file);
-			if (!file.exists())
+			if (handler.hasAccount(acc.getPlayer()))
 			{
-				cs = datei.createSection("values");
+				if (!handler.updateAccount(acc))
+				{
+					Bukkit.getLogger().log(
+							Level.INFO,
+							"Failed to update sql query for " + acc.getPlayer()
+									+ ". Inform your Dev.");
+				}
 			} else
 			{
-				cs = datei.getConfigurationSection("values");
-			}
-			Map<String, Object> accMap = new HashMap<String, Object>();
-			Map<String, Object> cpMap = new HashMap<String, Object>();
-			for (UUID uuid : accountList.keySet())
-			{
-				accMap.put(uuid.toString(), accountList.get(uuid)
-						.getAccountValue());
-				cpMap.put(uuid.toString(), accountList.get(uuid)
-						.getCoinpurseValue());
-			}
-
-			cs.set("account", accMap);
-			cs.set("coinpurse", cpMap);
-			try
-			{
-				datei.save(file);
-			} catch (IOException e)
-			{
-				logger.severe("failed to load accounts");
-			}
-		} else
-		{
-			EBeanHandler handler = EBeanHandler.getEBH();
-			for (Account acc : accountList.values())
-			{
-				if (handler.hasAccount(acc.getPlayer()))
-				{
-					if(!handler.updateAccount(acc))
-					{
-						logger.log(Level.INFO, "Failed to update sql query for " + acc.getPlayer());
-					}
-				} else
-				{
-					handler.storeAccount(acc);
-				}
+				handler.storeAccount(acc);
 			}
 		}
 	}
 
 	private void loadAccounts()
 	{
-		if (!useSQL)
-		{
-			File file = new File(root, "accounts.yml");
-			FileConfiguration datei = YamlConfiguration.loadConfiguration(file);
-
-			if (!file.exists())
-			{
-				return;
-			}
-
-			ConfigurationSection cs = datei.getConfigurationSection("values");
-			Map<String, Object> accMap = cs.getConfigurationSection("account")
-					.getValues(false);
-			Map<String, Object> cpMap = cs.getConfigurationSection("coinpurse")
-					.getValues(false);
-
-			for (String s : accMap.keySet())
-			{
-				UUID uuid = UUID.fromString(s);
-				Account acc = new Account(this, uuid, (double) accMap.get(s),
-						(double) cpMap.get(s), defaultLimit);
-				accountList.put(uuid, acc);
-			}
-		} else
-		{
-			accountList = EBeanHandler.getEBH().getAccounts();
-		}
+		accountList = EBeanHandler.getEBH().getAccounts();
 		adminAccount = accountList.get(new UUID(0, 0));
 	}
 
@@ -425,8 +287,6 @@ public class SEconomy extends JavaPlugin
 
 	public void reload()
 	{
-		saveConfig();
-		saveConfiguration();
 		saveAccounts();
 		saveBankBlocks();
 
@@ -465,7 +325,7 @@ public class SEconomy extends JavaPlugin
 
 	public void resetCoinpurse(Player player)
 	{
-		Account acc = accountList.get(player.getName());
+		Account acc = accountList.get(player.getUniqueId());
 		acc.setCoinpurseValue(0.0f);
 	}
 

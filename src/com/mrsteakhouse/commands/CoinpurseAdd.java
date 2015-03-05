@@ -1,13 +1,16 @@
 package com.mrsteakhouse.commands;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import com.mrsteakhouse.SEconomy;
 import com.mrsteakhouse.util.UUIDFetcher;
+import com.mrsteakhouse.util.Util;
 
 public class CoinpurseAdd implements SubCommand
 {
@@ -38,13 +41,31 @@ public class CoinpurseAdd implements SubCommand
 		com.mrsteakhouse.account.Account account = null;
 		double amount = 0;
 		UUID uuid = null;
+		String playername = "";
+		List<String> playernames;
 
 		try
 		{
-			uuid = UUIDFetcher.getUUIDOf(args[0]);
+			playernames = Util.fetchPlayerName(args[0]);
+			if (playernames.size() > 1)
+			{
+				sender.sendMessage(MessageFormat.format(
+						String.valueOf(plugin.getLangData().get("66")),
+						ChatColor.RED));
+				return false;
+			} else if (playernames.isEmpty())
+			{
+				sender.sendMessage(MessageFormat.format(
+						String.valueOf(plugin.getLangData().get("65")),
+						ChatColor.RED));
+				return false;
+			}
+			playername = playernames.get(0);
+			uuid = UUIDFetcher.getUUIDOf(playername);
 			amount = Double.parseDouble(args[1]);
 		} catch (Exception e)
 		{
+			sender.sendMessage(String.valueOf(plugin.getLangData().get("9")));
 		}
 
 		if (uuid == null)
@@ -66,7 +87,7 @@ public class CoinpurseAdd implements SubCommand
 		sender.sendMessage(MessageFormat.format(
 				String.valueOf(plugin.getLangData().get("52")), ChatColor.GOLD,
 				amount, String.valueOf(plugin.getLangData().get("currSymbol")),
-				ChatColor.DARK_GREEN, ChatColor.AQUA, args[0]));
+				ChatColor.DARK_GREEN, ChatColor.AQUA, playername));
 		return true;
 	}
 
@@ -81,6 +102,13 @@ public class CoinpurseAdd implements SubCommand
 	@Override
 	public void help(CommandSender sender)
 	{
+		if (sender instanceof Player)
+		{
+			if (!sender.hasPermission(perm))
+			{
+				return;
+			}
+		}
 		sender.sendMessage(ChatColor.YELLOW + "/se walletadd <name> <amount>: "
 				+ ChatColor.AQUA + plugin.getLangData().get("45"));
 	}

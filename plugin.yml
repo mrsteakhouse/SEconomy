@@ -1,9 +1,10 @@
 name: SEconomy
 description: Economy Plugin
 main: com.mrsteakhouse.SEconomy
+authors: [MrSteakhouse]
 database: true
 depend: [Vault]
-version: 1.6
+version: 2.8
 commands:
   seconomy:
     description: base command
@@ -22,6 +23,7 @@ permissions:
       seconomy.account.deposit: true
       seconomy.account.withdraw: true
       seconomy.account.add: true
+      seconomy.money.top: true
       seconomy.account.remove: true
       seconomy.account.set: true
       seconomy.coinpurse.show: true
@@ -45,6 +47,7 @@ permissions:
       seconomy.account.deposit: true
       seconomy.account.withdraw: true
       seconomy.account.add: true
+      seconomy.money.top: true
       seconomy.account.remove: true
       seconomy.account.set: true
       seconomy.coinpurse.show: true
@@ -73,6 +76,9 @@ permissions:
     default: false
   seconomy.account.add:
     description: allows to add the amount to a players account.
+    default: false
+  seconomy.money.top:
+    description: allows to view the top wealthy accounts.
     default: false
   seconomy.account.remove:
     description: allows to remove the amount to a players account.

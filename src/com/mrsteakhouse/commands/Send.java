@@ -1,6 +1,7 @@
 package com.mrsteakhouse.commands;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
 
 import com.mrsteakhouse.SEconomy;
 import com.mrsteakhouse.util.UUIDFetcher;
+import com.mrsteakhouse.util.Util;
 
 public class Send implements SubCommand
 {
@@ -44,44 +46,46 @@ public class Send implements SubCommand
 			return false;
 		}
 
+		double amount = 0;
+		com.mrsteakhouse.account.Account acc = null;
+		UUID uuid = null;
+		String playername = "";
+		List<String> playernames;
+
 		try
 		{
-			if (!plugin.getAccountList().containsKey(
-					UUIDFetcher.getUUIDOf(args[0]))
-					&& !args[0].equalsIgnoreCase("admin"))
+			playernames = Util.fetchPlayerName(args[0]);
+			if (playernames.size() > 1)
+			{
+				sender.sendMessage(MessageFormat.format(
+						String.valueOf(plugin.getLangData().get("66")),
+						ChatColor.RED));
+				return false;
+			} else if (playernames.isEmpty())
+			{
+				sender.sendMessage(MessageFormat.format(
+						String.valueOf(plugin.getLangData().get("65")),
+						ChatColor.RED));
+				return false;
+			}
+			playername = playernames.get(0);
+			uuid = UUIDFetcher.getUUIDOf(playername);
+			if (!plugin.getAccountList().containsKey(uuid))
 			{
 				player.sendMessage(ChatColor.DARK_RED
 						+ String.valueOf(plugin.getLangData().get("26")));
 				return false;
 			}
+			amount = Double.parseDouble(args[1]);
 		} catch (Exception e1)
 		{
 		}
 
-		double amount = 0;
-		String playerName = args[0];
-		com.mrsteakhouse.account.Account acc = null;
-		UUID uuid = null;
-
-		if (player.getName().equals(playerName))
+		if (player.getName().equals(playername))
 		{
 			player.sendMessage(ChatColor.DARK_RED
 					+ String.valueOf(plugin.getLangData().get("43")));
 			return false;
-		}
-
-		try
-		{
-			if (args[0].equalsIgnoreCase("admin"))
-			{
-				uuid = new UUID(0, 0);
-			} else
-			{
-				uuid = UUIDFetcher.getUUIDOf(args[0]);
-			}
-			amount = Double.parseDouble(args[1]);
-		} catch (Exception e)
-		{
 		}
 
 		if (uuid == null)
@@ -105,7 +109,7 @@ public class Send implements SubCommand
 					.getLangData().get("27")), ChatColor.DARK_GREEN, String
 					.valueOf(amount), plugin.getLangData().get("currSymbol"),
 					ChatColor.RESET));
-			Player play = Bukkit.getPlayer(playerName);
+			Player play = Bukkit.getPlayer(playername);
 			if (play != null)
 			{
 				play.sendMessage(MessageFormat.format(
@@ -134,6 +138,13 @@ public class Send implements SubCommand
 	@Override
 	public void help(CommandSender sender)
 	{
+		if (sender instanceof Player)
+		{
+			if (!sender.hasPermission(perm))
+			{
+				return;
+			}
+		}
 		sender.sendMessage(ChatColor.YELLOW + "/se send <name> <amount>: "
 				+ ChatColor.AQUA
 				+ String.valueOf(plugin.getLangData().get("29")));

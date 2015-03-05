@@ -48,6 +48,13 @@ public class Reload implements SubCommand
 	@Override
 	public void help(CommandSender sender)
 	{
+		if (sender instanceof Player)
+		{
+			if (!sender.hasPermission(perm))
+			{
+				return;
+			}
+		}
 		sender.sendMessage(ChatColor.YELLOW + "/se reload: " + ChatColor.AQUA
 				+ String.valueOf(plugin.getLangData().get("40")));
 	}

@@ -5,12 +5,9 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-
-import com.avaje.ebean.validation.NotNull;
 
 @Entity
 @Table(name = "seconomy_bankblocks")
@@ -25,7 +22,7 @@ public class EBeanBankBlock
 	public EBeanBankBlock()
 	{
 	}
-	
+
 	@Id
 	@Column(length = 9)
 	public Integer getId()
@@ -91,17 +88,18 @@ public class EBeanBankBlock
 	{
 		return "EBeanBankBlock(" + world + ": " + x + "," + y + "," + z + ")";
 	}
-	
+
 	@Transient
 	private volatile Location location;
-	
+
 	public EBeanBankBlock(Location location)
 	{
 		setLocation(location);
 	}
-	
+
 	@Transient
-	public Location getLocation() {
+	public Location getLocation()
+	{
 		if (location == null)
 			location = new Location(Bukkit.getWorld(getWorld()), getX(),
 					getY(), getZ());
@@ -109,7 +107,8 @@ public class EBeanBankBlock
 	}
 
 	@Transient
-	public void setLocation(Location location) {
+	public void setLocation(Location location)
+	{
 		this.location = location;
 		setWorld(location.getWorld().getName());
 		setX(location.getBlockX());
