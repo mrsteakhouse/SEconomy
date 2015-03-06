@@ -61,7 +61,7 @@ public class Account implements SubCommand
 			player.sendMessage(MessageFormat.format(String.valueOf(plugin
 					.getLangData().get("5")),
 					(money >= 0 ? ChatColor.DARK_GREEN : ChatColor.DARK_RED),
-					money, plugin.getLangData().get("currSymbol")));
+					Util.formatNumber(money), plugin.getLangData().get("currSymbol")));
 			return true;
 		}
 

@@ -106,15 +106,15 @@ public class Send implements SubCommand
 		if (plugin.getAccountList().get(player.getUniqueId()).send(acc, amount))
 		{
 			player.sendMessage(MessageFormat.format(String.valueOf(plugin
-					.getLangData().get("27")), ChatColor.DARK_GREEN, String
-					.valueOf(amount), plugin.getLangData().get("currSymbol"),
-					ChatColor.RESET));
+					.getLangData().get("27")), ChatColor.DARK_GREEN, Util
+					.formatNumber(amount),
+					plugin.getLangData().get("currSymbol"), ChatColor.RESET));
 			Player play = Bukkit.getPlayer(playername);
 			if (play != null)
 			{
 				play.sendMessage(MessageFormat.format(
 						String.valueOf(plugin.getLangData().get("42")),
-						ChatColor.DARK_GREEN, String.valueOf(amount),
+						ChatColor.DARK_GREEN, Util.formatNumber(amount),
 						String.valueOf(plugin.getLangData().get("currSymbol")),
 						ChatColor.RESET, player.getName()));
 			}

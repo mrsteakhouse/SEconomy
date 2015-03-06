@@ -21,3 +21,6 @@ seconomy:
   hostname: localhost
   port: 3306
   database: default
+  
+  #Spieler, die aus der money top gefiltert werden
+  topfilter: []

@@ -87,12 +87,12 @@ public class ShowAccount implements SubCommand
 
 		}
 
-		sender.sendMessage(MessageFormat.format(String.valueOf(plugin
-				.getLangData().get("61")), ChatColor.DARK_GREEN,
-				ChatColor.AQUA, playername, ChatColor.GOLD, account
-						.getAccountValue(),
-				plugin.getLangData().get("currSymbol"), account
-						.getCoinpurseValue()));
+		sender.sendMessage(MessageFormat.format(
+				String.valueOf(plugin.getLangData().get("61")),
+				ChatColor.DARK_GREEN, ChatColor.AQUA, playername,
+				ChatColor.GOLD, Util.formatNumber(account.getAccountValue()),
+				plugin.getLangData().get("currSymbol"),
+				Util.formatNumber(account.getCoinpurseValue())));
 		return true;
 	}
 

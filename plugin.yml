@@ -4,7 +4,7 @@ main: com.mrsteakhouse.SEconomy
 authors: [MrSteakhouse]
 database: true
 depend: [Vault]
-version: 2.8
+version: 2.9
 commands:
   seconomy:
     description: base command
@@ -23,7 +23,6 @@ permissions:
       seconomy.account.deposit: true
       seconomy.account.withdraw: true
       seconomy.account.add: true
-      seconomy.money.top: true
       seconomy.account.remove: true
       seconomy.account.set: true
       seconomy.coinpurse.show: true
@@ -31,6 +30,8 @@ permissions:
       seconomy.coinpurse.add: true
       seconomy.coinpurse.remove: true
       seconomy.coinpurse.set: true
+      seconomy.money.top: true
+      secomony.money.top.admin: true
       seconomy.bank.add: true
       seconomy.bank.del: true
       seconomy.bank.showbanklist: true
@@ -47,7 +48,6 @@ permissions:
       seconomy.account.deposit: true
       seconomy.account.withdraw: true
       seconomy.account.add: true
-      seconomy.money.top: true
       seconomy.account.remove: true
       seconomy.account.set: true
       seconomy.coinpurse.show: true
@@ -55,6 +55,8 @@ permissions:
       seconomy.coinpurse.add: true
       seconomy.coinpurse.remove: true
       seconomy.coinpurse.set: true
+      seconomy.money.top: true
+      secomony.money.top.admin: true
       seconomy.bank.add: true
       seconomy.bank.del: true
       seconomy.bank.showbanklist: true
@@ -77,9 +79,6 @@ permissions:
   seconomy.account.add:
     description: allows to add the amount to a players account.
     default: false
-  seconomy.money.top:
-    description: allows to view the top wealthy accounts.
-    default: false
   seconomy.account.remove:
     description: allows to remove the amount to a players account.
     default: false
@@ -100,6 +99,12 @@ permissions:
     default: false
   seconomy.coinpurse.set:
     description: allows to set the amount to a players coinpurse.
+    default: false
+  seconomy.money.top:
+    description: allows to view the top wealthy accounts.
+    default: false
+  secomony.money.top.admin:
+    description: allows to view the top wealthy accounts.
     default: false
   seconomy.bank.add:
     description: to add a new bank block.

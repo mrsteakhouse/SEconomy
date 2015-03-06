@@ -94,7 +94,7 @@ public class AccountSet implements SubCommand
 		sender.sendMessage(MessageFormat.format(
 				String.valueOf(plugin.getLangData().get("55")),
 				ChatColor.DARK_GREEN, ChatColor.AQUA, playername, ChatColor.GOLD,
-				amount, String.valueOf(plugin.getLangData().get("currSymbol"))));
+				Util.formatNumber(amount), String.valueOf(plugin.getLangData().get("currSymbol"))));
 		return true;
 	}
 

@@ -59,6 +59,7 @@ public class SEconomy extends JavaPlugin
 	private String DBUrl = "";
 	private Calendar nextClean = new GregorianCalendar();
 	private static EbeanServer database;
+	private List<String> moneyTopFilter;
 
 	@Override
 	public void onEnable()
@@ -93,7 +94,6 @@ public class SEconomy extends JavaPlugin
 		Bukkit.getLogger().info(
 				String.format("[%s] %s %s", getDescription().getName(),
 						this.langData.get("1"), getDescription().getVersion()));
-		saveConfig();
 		saveConfiguration();
 		saveAccounts();
 		saveBankBlocks();
@@ -120,6 +120,7 @@ public class SEconomy extends JavaPlugin
 		DBPass = cs.getString("password");
 		DBUrl = "jdbc:mysql://" + cs.getString("hostname") + ":"
 				+ cs.getInt("port") + "/" + cs.getString("database");
+		moneyTopFilter = cs.getStringList("topfilter");
 	}
 
 	@SuppressWarnings("deprecation")
@@ -416,5 +417,15 @@ public class SEconomy extends JavaPlugin
 	public static EbeanServer getDB()
 	{
 		return database;
+	}
+
+	public List<String> getMoneyTopFilter()
+	{
+		return moneyTopFilter;
+	}
+
+	public void setMoneyTopFilter(List<String> moneyTopFilter)
+	{
+		this.moneyTopFilter = moneyTopFilter;
 	}
 }

@@ -15,13 +15,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.mrsteakhouse.SEconomy;
+import com.mrsteakhouse.util.UUIDFetcher;
 import com.mrsteakhouse.util.Util;
 
 public class Money implements CommandExecutor
 {
 	private final static String perm[] =
 	{ "seconomy.coinpurse.show", "seconomy.account.deposit",
-			"seconomy.account.withdraw", "seconomy.money.top" };
+			"seconomy.account.withdraw", "seconomy.money.top",
+			"secomony.money.top.admin" };
 	private static SEconomy plugin = null;
 
 	public Money(SEconomy plugin)
@@ -175,23 +177,63 @@ public class Money implements CommandExecutor
 				}
 			}
 
-			if (args.length > 1)
+			if (args.length >= 1)
 			{
 				if (args[0].equalsIgnoreCase("top"))
 				{
 					int page = 0;
 					int linesPerPage = 10;
 
-					if (!player.hasPermission(perm[3]))
+					List<com.mrsteakhouse.account.Account> sortedAccounts = new ArrayList<com.mrsteakhouse.account.Account>();
+					sortedAccounts.addAll(plugin.getAccountList().values());
+					Collections.sort(sortedAccounts);
+					sortedAccounts.remove(plugin.getAdminAccount());
+					for (String name : plugin.getMoneyTopFilter())
+					{
+						try
+						{
+							sortedAccounts.remove(plugin.getAccountList().get(
+									UUIDFetcher.getUUIDOf(name)));
+						} catch (Exception e)
+						{
+						}
+					}
+
+					if (!player.hasPermission(perm[4]))
 					{
 						player.sendMessage(ChatColor.RED
 								+ MessageFormat.format(String.valueOf(plugin
-										.getLangData().get("7")), perm[3]));
+										.getLangData().get("7")), perm[4]));
 						return false;
 					}
 
 					if (args.length == 2)
 					{
+						if (!player.hasPermission(perm[3]))
+						{
+							player.sendMessage(ChatColor.RED
+									+ MessageFormat.format(String
+											.valueOf(plugin.getLangData().get(
+													"7")), perm[3]));
+							return false;
+						}
+
+						page = Integer.valueOf(args[1]);
+						if (page > 0)
+						{
+							page--;
+						}
+
+						sender.sendMessage(MessageFormat.format(
+								"{0}-------- Top Player Page {1}"
+										+ (page + 1)
+										+ "{0}/{1}"
+										+ (sortedAccounts.size() <= 10 ? 1
+												: ((int) (sortedAccounts.size()
+														/ linesPerPage + 0.5)))
+										+ "{0} --------", ChatColor.DARK_GREEN,
+								ChatColor.GOLD));
+
 						if (!Util.isInteger(args[1]))
 						{
 							player.sendMessage(ChatColor.DARK_RED
@@ -199,24 +241,12 @@ public class Money implements CommandExecutor
 											"9")));
 							return false;
 						}
-						page = Integer.valueOf(args[1]);
-					}
-
-					List<com.mrsteakhouse.account.Account> sortedAccounts = new ArrayList<com.mrsteakhouse.account.Account>();
-					sortedAccounts.addAll(plugin.getAccountList().values());
-					Collections.sort(sortedAccounts);
-
-					if (page > 0)
+					} else
 					{
-						page--;
+						sender.sendMessage(MessageFormat.format(
+								"{0}------------ Top Player ------------",
+								ChatColor.DARK_GREEN, ChatColor.GOLD));
 					}
-					sender.sendMessage(MessageFormat.format(
-							"{0}-------- Top Player Page {1}"
-									+ (page + 1)
-									+ "{0}/{1}"
-									+ ((int) linesPerPage / sortedAccounts
-											.toArray().length) + "{0} --------",
-							ChatColor.DARK_GREEN, ChatColor.GOLD));
 
 					com.mrsteakhouse.account.Account tempAcc;
 					double value;
@@ -233,13 +263,14 @@ public class Money implements CommandExecutor
 							playerName = "Adminaccount";
 						} else
 						{
-							playerName = Bukkit.getPlayer(tempAcc.getPlayer())
-									.getName();
+							playerName = Bukkit.getOfflinePlayer(
+									tempAcc.getPlayer()).getName();
 						}
 						sender.sendMessage(MessageFormat.format(
 								"{0}{1}. {2}: {3}{4}{0}{5}", ChatColor.GREEN,
-								playerName, i + 1, ChatColor.GOLD, value,
-								plugin.getLangData().get("currSymbol")));
+								i + 1, playerName, ChatColor.GOLD, Util
+										.formatNumber(value), plugin
+										.getLangData().get("currSymbol")));
 					}
 					sender.sendMessage(ChatColor.DARK_GREEN
 							+ "-----------------------------------");
@@ -252,8 +283,8 @@ public class Money implements CommandExecutor
 			player.sendMessage(MessageFormat.format(String.valueOf(plugin
 					.getLangData().get("24")),
 					(money >= 0 ? ChatColor.DARK_GREEN : ChatColor.DARK_RED),
-					money, ChatColor.RESET,
-					plugin.getLangData().get("currSymbol")));
+					Util.formatNumber(money), ChatColor.RESET, plugin
+							.getLangData().get("currSymbol")));
 			return true;
 		}
 		return false;
@@ -273,7 +304,8 @@ public class Money implements CommandExecutor
 			if ((!sender.hasPermission(perm[0]))
 					|| (!sender.hasPermission(perm[1]))
 					|| (!sender.hasPermission(perm[2]))
-					|| (!sender.hasPermission(perm[3])))
+					|| (!sender.hasPermission(perm[3]))
+					|| (!sender.hasPermission(perm[4])))
 			{
 				return;
 			}

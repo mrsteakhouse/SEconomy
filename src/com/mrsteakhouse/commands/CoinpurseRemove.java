@@ -86,7 +86,7 @@ public class CoinpurseRemove implements SubCommand
 		account.removeCoinpurseValue(amount);
 		sender.sendMessage(MessageFormat.format(
 				String.valueOf(plugin.getLangData().get("54")), ChatColor.GOLD,
-				amount, String.valueOf(plugin.getLangData().get("currSymbol")),
+				Util.formatNumber(amount), String.valueOf(plugin.getLangData().get("currSymbol")),
 				ChatColor.DARK_GREEN, ChatColor.AQUA, playername));
 		return true;
 	}

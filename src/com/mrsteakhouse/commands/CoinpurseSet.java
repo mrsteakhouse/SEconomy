@@ -61,7 +61,7 @@ public class CoinpurseSet implements SubCommand
 				return false;
 			}
 			playername = playernames.get(0);
-			uuid = UUIDFetcher.getUUIDOf(args[0]);
+			uuid = UUIDFetcher.getUUIDOf(playername);
 			amount = Double.parseDouble(args[1]);
 		} catch (Exception e)
 		{
@@ -80,7 +80,7 @@ public class CoinpurseSet implements SubCommand
 		sender.sendMessage(MessageFormat.format(
 				String.valueOf(plugin.getLangData().get("56")),
 				ChatColor.DARK_GREEN, ChatColor.AQUA, playername, ChatColor.GOLD,
-				amount, String.valueOf(plugin.getLangData().get("currSymbol"))));
+				Util.formatNumber(amount), String.valueOf(plugin.getLangData().get("currSymbol"))));
 		return true;
 	}
 

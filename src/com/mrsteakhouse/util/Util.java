@@ -1,5 +1,6 @@
 package com.mrsteakhouse.util;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,5 +78,10 @@ public class Util
 			}
 		}
 		return names;
+	}
+	
+	public static String formatNumber(double value)
+	{
+		return new DecimalFormat("#.##").format(value);
 	}
 }

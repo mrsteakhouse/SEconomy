@@ -52,7 +52,7 @@ public class SetTax implements SubCommand
 		plugin.setTax(tax / 100);
 		sender.sendMessage(MessageFormat.format(
 				String.valueOf(plugin.getLangData().get("59")),
-				ChatColor.DARK_GREEN, ChatColor.GOLD, tax));
+				ChatColor.DARK_GREEN, ChatColor.GOLD, Util.formatNumber(tax)));
 		return true;
 	}
 
