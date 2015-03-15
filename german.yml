@@ -69,3 +69,5 @@ german:
     '64': 'Spielerkonto nicht gefunden.'
     '65': '{0}Name nicht gefunden.'
     '66': '{0}Zu viele Namen kommen in frage. Bitte sei praeziser.'
+    '67': 'Loescht alle Accounts die aelter sind als {1}'
+    '68': '{0}Accountdatenbank bereinigt'

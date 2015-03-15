@@ -21,6 +21,7 @@ import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -36,6 +37,7 @@ import com.mrsteakhouse.commands.Money;
 import com.mrsteakhouse.commands.CommandHandler;
 import com.mrsteakhouse.listener.BlockListener;
 import com.mrsteakhouse.listener.PlayerListener;
+import com.mrsteakhouse.scheduler.AccountCleaner;
 import com.mrsteakhouse.sqlbridge.DBUtil;
 import com.mrsteakhouse.sqlbridge.EBeanAccount;
 import com.mrsteakhouse.sqlbridge.EBeanBankBlock;
@@ -60,6 +62,11 @@ public class SEconomy extends JavaPlugin
 	private Calendar nextClean = new GregorianCalendar();
 	private static EbeanServer database;
 	private List<String> moneyTopFilter;
+	private int cleaningQuantity;
+	private int cleaningType;
+	private boolean autoCleaning = false;
+	private long cleaningIntervall;
+	private int taskID;
 
 	@Override
 	public void onEnable()
@@ -84,6 +91,12 @@ public class SEconomy extends JavaPlugin
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new BlockListener(this), this);
 		pm.registerEvents(new PlayerListener(this), this);
+
+		if (autoCleaning)
+		{
+			taskID = getServer().getScheduler().scheduleSyncRepeatingTask(this,
+					new AccountCleaner(this), 2000L, cleaningIntervall);
+		}
 
 		setupAdminAccount();
 	}
@@ -121,6 +134,23 @@ public class SEconomy extends JavaPlugin
 		DBUrl = "jdbc:mysql://" + cs.getString("hostname") + ":"
 				+ cs.getInt("port") + "/" + cs.getString("database");
 		moneyTopFilter = cs.getStringList("topfilter");
+		cleaningQuantity = cs.getInt("cleanquantity");
+		autoCleaning = cs.getBoolean("autocleaning");
+		cleaningIntervall = cs.getLong("cleaninginterval");
+		String tempType = cs.getString("cleantype");
+
+		switch (tempType)
+		{
+		case "year":
+			cleaningType = 1;
+			break;
+		case "month":
+			cleaningType = 2;
+			break;
+		case "day":
+			cleaningType = 5;
+			break;
+		}
 	}
 
 	@SuppressWarnings("deprecation")
@@ -249,13 +279,14 @@ public class SEconomy extends JavaPlugin
 		EBeanHandler handler = EBeanHandler.getEBH();
 		for (Account acc : accountList.values())
 		{
-			if (handler.hasAccount(acc.getPlayer()))
+			if (handler.hasAccount(acc.getPlayerUUID()))
 			{
 				if (!handler.updateAccount(acc))
 				{
 					Bukkit.getLogger().log(
 							Level.INFO,
-							"Failed to update sql query for " + acc.getPlayer()
+							"Failed to update sql query for "
+									+ acc.getPlayerUUID()
 									+ ". Inform your Dev.");
 				}
 			} else
@@ -275,7 +306,8 @@ public class SEconomy extends JavaPlugin
 	{
 		if (!this.accountList.containsKey(new UUID(0, 0)))
 		{
-			accountList.put(new UUID(0, 0), new Account(this, new UUID(0, 0)));
+			accountList.put(new UUID(0, 0), new Account(this, new UUID(0, 0),
+					"admin"));
 		}
 
 		adminAccount = accountList.get(new UUID(0, 0));
@@ -288,6 +320,8 @@ public class SEconomy extends JavaPlugin
 
 	public void reload()
 	{
+		getServer().getScheduler().cancelTask(taskID);
+
 		saveAccounts();
 		saveBankBlocks();
 
@@ -305,6 +339,12 @@ public class SEconomy extends JavaPlugin
 		loadLanguage();
 		loadAccounts();
 		loadBankBlocks();
+
+		if (autoCleaning)
+		{
+			taskID = getServer().getScheduler().scheduleSyncRepeatingTask(this,
+					new AccountCleaner(this), 2000L, cleaningIntervall);
+		}
 
 		Bukkit.getLogger().fine(this.prefix + this.langData.get("3"));
 	}
@@ -334,16 +374,42 @@ public class SEconomy extends JavaPlugin
 	{
 		if (!accountList.containsKey(player.getUniqueId()))
 		{
-			Account acc = new Account(this, player.getUniqueId(), startvalue,
-					0, defaultLimit);
+			Account acc = new Account(this, player.getUniqueId(),
+					player.getName(), startvalue, 0, defaultLimit);
 			accountList.put(player.getUniqueId(), acc);
 			EBeanHandler.getEBH().storeAccount(acc);
 		}
 	}
 
+	public boolean deleteAccount(Account account)
+	{
+		if (!EBeanHandler.getEBH().deleteAccount(account))
+			return false;
+
+		this.accountList.remove(account);
+		return true;
+	}
+
+	@SuppressWarnings("static-access")
 	public void cleanAccounts()
 	{
-		// TODO routine einfügen
+		OfflinePlayer player;
+		Calendar lastPlayed;
+		Calendar deletionDate = new GregorianCalendar().getInstance();
+		deletionDate.add(cleaningType, -cleaningQuantity);
+		for (Account acc : this.accountList.values())
+		{
+			if (acc.getPlayerName().equalsIgnoreCase("admin"))
+				continue;
+
+			player = Bukkit.getOfflinePlayer(acc.getPlayerUUID());
+			lastPlayed = new GregorianCalendar().getInstance();
+			lastPlayed.setTimeInMillis(player.getLastPlayed());
+			if (lastPlayed.before(deletionDate))
+			{
+				deleteAccount(acc);
+			}
+		}
 	}
 
 	public Set<Location> getBankBlocks()

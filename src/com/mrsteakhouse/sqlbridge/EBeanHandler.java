@@ -28,9 +28,9 @@ public class EBeanHandler
 
 	public boolean storeBankBlock(Location location)
 	{
-		if(hasBankBlock(location))
+		if (hasBankBlock(location))
 			return false;
-		
+
 		EBeanBankBlock bankblock = new EBeanBankBlock();
 		bankblock.setWorld(location.getWorld().getName());
 		bankblock.setX((int) location.getX());
@@ -49,11 +49,11 @@ public class EBeanHandler
 
 	public boolean storeAccount(Account account)
 	{
-		if (hasAccount(account.getPlayer()))
+		if (hasAccount(account.getPlayerUUID()))
 			return false;
 
 		EBeanAccount acc = new EBeanAccount();
-		acc.setUser(account.getPlayer().toString());
+		acc.setUser(account.getPlayerUUID().toString());
 		acc.setAccountValue(new BigDecimal(account.getAccountValue()));
 		acc.setCoinpurseValue(new BigDecimal(account.getCoinpurseValue()));
 		db.save(acc);
@@ -108,14 +108,14 @@ public class EBeanHandler
 
 	private boolean deleteBankBlock(String world, int x, int y, int z)
 	{
-		SqlUpdate deleteChest = db
+		SqlUpdate deleteBank = db
 				.createSqlUpdate("delete from seconomy_bankblocks where world = :world and x = :x and y = :y and z = :z");
-		deleteChest.setParameter("world", world);
-		deleteChest.setParameter("x", x);
-		deleteChest.setParameter("y", y);
-		deleteChest.setParameter("z", z);
+		deleteBank.setParameter("world", world);
+		deleteBank.setParameter("x", x);
+		deleteBank.setParameter("y", y);
+		deleteBank.setParameter("z", z);
 
-		return deleteChest.execute() > 0;
+		return deleteBank.execute() > 0;
 	}
 
 	public static EBeanHandler getEBH()
@@ -135,13 +135,21 @@ public class EBeanHandler
 		Map<UUID, Account> accounts = new HashMap<UUID, Account>();
 		for (SqlRow result : getAccounts.findSet())
 		{
-			String uuid = result.getString("user");
+			UUID uuid = UUID.fromString(result.getString("user"));
 			double accountValue = result.getDouble("account_value");
 			double coinpurseValue = result.getDouble("coinpurse_value");
+			String playerName;
 
-			accounts.put(UUID.fromString(uuid),
-					new Account(plugin, UUID.fromString(uuid), accountValue,
-							coinpurseValue, plugin.getTax()));
+			if (uuid.equals(new UUID(0, 0)))
+			{
+				playerName = "admin";
+			} else
+			{
+				playerName = Bukkit.getOfflinePlayer(uuid).getName();
+			}
+
+			accounts.put(uuid, new Account(plugin, uuid, playerName,
+					accountValue, coinpurseValue, plugin.getTax()));
 		}
 
 		return accounts;
@@ -150,7 +158,7 @@ public class EBeanHandler
 	public boolean updateAccount(Account account)
 	{
 		Set<EBeanAccount> accs = db.find(EBeanAccount.class).where()
-				.eq("user", account.getPlayer().toString()).findSet();
+				.eq("user", account.getPlayerUUID().toString()).findSet();
 
 		if (accs.isEmpty())
 		{
@@ -164,11 +172,13 @@ public class EBeanHandler
 		return true;
 	}
 
-	public void deleteAccount(Account account)
+	public boolean deleteAccount(Account account)
 	{
-		// TODO implement deleteAccount, mayhaps?
-		throw new RuntimeException(
-				"delete account not supported yet in EBeanHandler");
+		SqlUpdate deleteAccount = db
+				.createSqlUpdate("delete from seconomy_accounts where user = :user");
+		deleteAccount.setParameter("user", account.getPlayerUUID());
+
+		return deleteAccount.execute() > 0;
 	}
 
 	/**

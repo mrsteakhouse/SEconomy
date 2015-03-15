@@ -258,13 +258,13 @@ public class Money implements CommandExecutor
 						tempAcc = sortedAccounts.get(i);
 						value = tempAcc.getAccountValue()
 								+ tempAcc.getCoinpurseValue();
-						if (tempAcc.getPlayer().equals(new UUID(0, 0)))
+						if (tempAcc.getPlayerUUID().equals(new UUID(0, 0)))
 						{
 							playerName = "Adminaccount";
 						} else
 						{
 							playerName = Bukkit.getOfflinePlayer(
-									tempAcc.getPlayer()).getName();
+									tempAcc.getPlayerUUID()).getName();
 						}
 						sender.sendMessage(MessageFormat.format(
 								"{0}{1}. {2}: {3}{4}{0}{5}", ChatColor.GREEN,

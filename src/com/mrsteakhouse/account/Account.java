@@ -9,26 +9,28 @@ public class Account implements Comparable<Account>
 	private SEconomy plugin;
 	private double accountValue;
 	private double coinpurseValue;
-	private UUID player;
+	private UUID playerUUID;
+	private String playerName;
 	private double limit = -50.0f;
 
-	public Account(SEconomy plugin, UUID player)
+	public Account(SEconomy plugin, UUID player, String playerName)
 	{
-		this(plugin, player, 0, 0, -50.0f);
+		this(plugin, player, playerName, 0, 0, -50.0f);
 	}
 
-	public Account(SEconomy plugin, UUID player, double limit)
+	public Account(SEconomy plugin, UUID player, String playerName, double limit)
 	{
-		this(plugin, player, 0, 0, limit);
+		this(plugin, player, playerName, 0, 0, limit);
 	}
 
-	public Account(SEconomy plugin, UUID player, double aValue, double cpValue,
-			double limit)
+	public Account(SEconomy plugin, UUID player, String playerName,
+			double aValue, double cpValue, double limit)
 	{
 		this.plugin = plugin;
-		this.player = player;
+		this.playerUUID = player;
 		this.accountValue = aValue;
 		this.coinpurseValue = cpValue;
+		this.playerName = playerName;
 		this.limit = limit;
 	}
 
@@ -52,14 +54,24 @@ public class Account implements Comparable<Account>
 		this.coinpurseValue = coinpurseValue;
 	}
 
-	public UUID getPlayer()
+	public UUID getPlayerUUID()
 	{
-		return player;
+		return playerUUID;
 	}
 
-	public void setPlayer(UUID player)
+	public void setPlayerUUID(UUID uuid)
 	{
-		this.player = player;
+		this.playerUUID = uuid;
+	}
+
+	public String getPlayerName()
+	{
+		return this.playerName;
+	}
+
+	public void setPlayerName(String playerName)
+	{
+		this.playerName = playerName;
 	}
 
 	public double getLimit()
@@ -106,7 +118,7 @@ public class Account implements Comparable<Account>
 		if (hasCoinpuse(amount))
 		{
 			removeCoinpurseValue(amount);
-			if (reciever.getPlayer().equals(new UUID(0, 0)))
+			if (reciever.getPlayerUUID().equals(new UUID(0, 0)))
 			{
 				reciever.addAccountValue(amount);
 			} else
@@ -150,7 +162,7 @@ public class Account implements Comparable<Account>
 	{
 		return getCoinpurseValue() >= amount;
 	}
-	
+
 	public boolean withdrawFromCoinpurse(double amount)
 	{
 		if (getCoinpurseValue() >= 0.0d)
@@ -162,7 +174,7 @@ public class Account implements Comparable<Account>
 			return false;
 		}
 	}
-	
+
 	public boolean depositIntoCoinpurse(double amount)
 	{
 		addCoinpurseValue(amount);
@@ -172,6 +184,7 @@ public class Account implements Comparable<Account>
 	@Override
 	public int compareTo(Account acc)
 	{
-		return (int) ((acc.getAccountValue() + acc.getCoinpurseValue()) - (this.getAccountValue() + this.getCoinpurseValue()));
+		return (int) ((acc.getAccountValue() + acc.getCoinpurseValue()) - (this
+				.getAccountValue() + this.getCoinpurseValue()));
 	}
 }

@@ -1,7 +1,9 @@
 package com.mrsteakhouse.listener;
 
 import java.text.MessageFormat;
+import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -35,6 +37,14 @@ public class PlayerListener implements Listener
 							.getAccountList().get(player.getUniqueId())
 							.getCoinpurseValue(),
 					String.valueOf(plugin.getLangData().get("currSymbol"))));
+			Bukkit.getLogger().log(
+					Level.INFO,
+					plugin.getPrefix()
+							+ "User "
+							+ player.getName()
+							+ " lost "
+							+ plugin.getAccountList().get(player.getUniqueId())
+									.getCoinpurseValue());
 			plugin.resetCoinpurse(player);
 		}
 	}

@@ -45,6 +45,7 @@ public class CommandHandler implements CommandExecutor
 		commands.put("reset", new Reset(plugin));
 		commands.put("settax", new SetTax(plugin));
 		commands.put("showacc", new ShowAccount(plugin));
+		commands.put("cleanaccounts", new CleanAccounts(plugin));
 	}
 
 	@Override

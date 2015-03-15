@@ -13,8 +13,10 @@ seconomy:
   #Steuern die beim einzahlen an das adminkonto gesendet werden.
   tax: 10
   
-  #ingorieren.
-  nextClean: 0
+  cleanquantity: 1
+  cleantype: month
+  cleaninginterval: 2000000
+  autocleaning: false
   
   username: root
   password: admin

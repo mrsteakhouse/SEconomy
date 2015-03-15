@@ -4,7 +4,7 @@ main: com.mrsteakhouse.SEconomy
 authors: [MrSteakhouse]
 database: true
 depend: [Vault]
-version: 2.9
+version: 3.0
 commands:
   seconomy:
     description: base command
@@ -38,6 +38,7 @@ permissions:
       seconomy.reset: true
       seconomy.settax: true
       seconomy.show: true
+      seconomy.cleanaccounts: true
       
   seconomy.all:
     description: all persmissions in one
@@ -63,6 +64,7 @@ permissions:
       seconomy.reset: true
       seconomy.settax: true
       seconomy.show: true
+      seconomy.cleanaccounts: true
     
   seconomy.reload:
     description: reloads settings and data.
@@ -123,4 +125,7 @@ permissions:
     default: false
   seconomy.show:
     description: to see an users account status.
+    default: false
+  seconomy.cleanaccounts:
+    description: allows to schedule account cleaning
     default: false
